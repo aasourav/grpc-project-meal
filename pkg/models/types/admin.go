@@ -24,16 +24,17 @@ const (
 )
 
 type Admin struct {
-	ID                 string     `json:"id" bson:"_id,omitempty"`
-	UserId             string     `json:"userId" bson:"userId" validate:"required"`
-	Name               string     `json:"name" bson:"name" validate:"required"`
-	Role               AdminRole  `json:"role" bson:"role" validate:"required,oneof=SADMIN ADMIN"`
-	DepartmentInCharge Department `json:"departmentInCharge" bson:"departmentInCharge" validate:"required,oneof=TECHNOLOGY HR MARKETING FINANCE"`
-	CreatedAt          time.Time  `bson:"createdAt" json:"createdAt"`
-	UpdatedAt          time.Time  `bson:"updatedAt" json:"updatedAt"`
-	EmployeeId         string     `json:"employeeId" bson:"employeeId" validate:"required"`
-	PendingApprovalIds []string   `bson:"pendingApprovalIds" json:"pendingApprovalIds"`
-	Department         Department `json:"department" bson:"department" validate:"required,oneof=TECHNOLOGY HR MARKETING FINANCE"`
+	ID                      string     `json:"id" bson:"_id,omitempty"`
+	UserId                  string     `json:"userId" bson:"userId" validate:"required"`
+	Name                    string     `json:"name" bson:"name" validate:"required"`
+	Role                    AdminRole  `json:"role" bson:"role" validate:"required,oneof=SADMIN ADMIN"`
+	DepartmentInCharge      Department `json:"departmentInCharge" bson:"departmentInCharge" validate:"required,oneof=TECHNOLOGY HR MARKETING FINANCE"`
+	CreatedAt               time.Time  `bson:"createdAt" json:"createdAt"`
+	UpdatedAt               time.Time  `bson:"updatedAt" json:"updatedAt"`
+	EmployeeId              string     `json:"employeeId" bson:"employeeId" validate:"required"`
+	PendingUserApprovalIds  []string   `bson:"pendingApprovalIds" json:"pendingApprovalIds"`
+	PendingAdminApprovalIds []string   `bson:"pendingAdminApprovalIds" json:"pendingAdminApprovalIds"`
+	Department              Department `json:"department" bson:"department" validate:"required,oneof=TECHNOLOGY HR MARKETING FINANCE"`
 	AdminLogin
 }
 
