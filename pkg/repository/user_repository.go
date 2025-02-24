@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"aas.dev/pkg/models/types"
+	"aas.dev/pkg/utils"
 
 	"aas.dev/pkg/interfaces"
 	models "aas.dev/pkg/models/user"
@@ -26,9 +27,10 @@ func NewPendingUserRepo(db *mongo.Database) interfaces.UserRepository {
 }
 
 func (repo *UserRepo) CreateUser(user *models.User) error {
+	hashedPassword, _ := utils.HashPassword(user.Password)
 	userDoc := bson.M{
-		"email":      user.UserLogin.Email,
-		"password":   user.UserLogin.Password,
+		"email":      user.Email,
+		"password":   hashedPassword,
 		"name":       user.Name,
 		"employeeId": user.EmployeeId,
 		"weeklyPlan": user.WeeklyPlan,
