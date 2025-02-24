@@ -15,6 +15,7 @@ func main() {
 	r := gin.Default()
 
 	routes.SetupUserRoutes(r, db)
+	routes.SetupAdminRoutes(r, db)
 	routes.SetupMainRoutes(r)
 
 	log.Println("server running on port: ", cfg.ServerPort)

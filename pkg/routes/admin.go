@@ -10,20 +10,13 @@ import (
 )
 
 func SetupAdminRoutes(router *gin.Engine, db *mongo.Database) {
-	// user
-	userRepo := repository.NewUserRepo(db)
-	userService := services.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
+	adminRepo := repository.NewAdminRepo(db)
+	adminService := services.NewAdminService(adminRepo)
+	adminHandler := handlers.NewAdminHandler(adminService)
 
-	// pending user
-	pendingUserRepo := repository.NewUserRepo(db)
-	pendingUserRepoService := services.NewUserService(pendingUserRepo)
-	pendingUserRepoHandler := handlers.NewUserHandler(pendingUserRepoService)
-
-	userRoutes := router.Group("/users")
+	adminRoutes := router.Group("/admins")
 	{
-		userRoutes.POST("/register", pendingUserRepoHandler.RegisterUser)
-		userRoutes.POST("/login", userHandler.RegisterUser)
-		// userRoutes.POST("/change-password", pendingUserRepoHandler.RegisterUser)
+		adminRoutes.POST("/register", adminHandler.RegisterUser)
+		adminRoutes.POST("/login", adminHandler.Login, adminHandler.Login)
 	}
 }

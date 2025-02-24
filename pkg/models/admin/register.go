@@ -9,8 +9,16 @@ type Admin struct {
 	types.Admin
 }
 
+type AdminLogin struct {
+	types.AdminLogin
+}
+
 var adminValidate = validator.New()
 
-func (a *Admin) AdminValidateConsumeValidate() error {
+func (a *Admin) AdminValidate() error {
+	return adminValidate.Struct(a)
+}
+
+func (a *AdminLogin) AdminLoginValidate() error {
 	return adminValidate.Struct(a)
 }
