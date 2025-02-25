@@ -10,6 +10,7 @@ import (
 	models "aas.dev/pkg/models/admin"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -22,6 +23,15 @@ type AdminRepo struct {
 //	}
 func NewAdminRepo(db *mongo.Database) interfaces.AdminRepository {
 	return &AdminRepo{collection: db.Collection(types.ADMINS)}
+}
+
+func (repo *AdminRepo) DeleteAdminById(id string) error {
+	hexId, _ := primitive.ObjectIDFromHex(id)
+	_, err := repo.collection.DeleteOne(context.TODO(), bson.M{"_id": hexId})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (repo *AdminRepo) CreateAdmin(admin *models.Admin) error {

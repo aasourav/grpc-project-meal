@@ -51,7 +51,7 @@ func (h *AdminHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.RegisterAdmin(&admin); err != nil {
+	if err := h.service.RegisterAdmin(c,&admin); err != nil {
 		utils.ErrorJSON(c, err, http.StatusBadRequest)
 		fmt.Println(err.Error())
 		return
