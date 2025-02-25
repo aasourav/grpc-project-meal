@@ -33,6 +33,7 @@ type Admin struct {
 	UpdatedAt               time.Time  `bson:"updatedAt" json:"updatedAt"`
 	EmployeeId              string     `json:"employeeId" bson:"employeeId" validate:"required"`
 	PendingUserApprovalIds  []string   `bson:"pendingApprovalIds" json:"pendingApprovalIds"`
+	IsEmailApproved         bool       `bson:"isEmailApproved" json:"isEmailApproved"`
 	IsApproved              bool       `bson:"isApproved" json:"isApproved"`
 	PendingAdminApprovalIds []string   `bson:"pendingAdminApprovalIds" json:"pendingAdminApprovalIds"`
 	Department              Department `json:"department" bson:"department" validate:"required,oneof=TECHNOLOGY HR MARKETING FINANCE"`

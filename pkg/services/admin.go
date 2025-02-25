@@ -6,6 +6,7 @@ import (
 
 	"aas.dev/pkg/interfaces"
 	models "aas.dev/pkg/models/admin"
+	"aas.dev/pkg/models/types"
 	"aas.dev/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -40,14 +41,29 @@ func (s *AdminService) LoginAdmin(admin *models.AdminLogin, c *gin.Context) (*mo
 	return adminDoc, nil
 }
 
-func (s *AdminService) RegisterAdmin(admin *models.Admin) error {
+func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error {
 	adminDoc, _ := s.FindAdminByEmail(admin.Email)
 	if adminDoc != nil {
 		return errors.New("email already exist")
 	}
 	admin.CreatedAt = time.Now()
 	admin.UpdatedAt = admin.CreatedAt
-	return s.repo.CreateAdmin(admin)
+	err := s.repo.CreateAdmin(admin)
+	if err != nil {
+		return err
+	}
+
+	emailVerifyData := types.EmailVerifyTypes{
+		Email: admin.Email,
+		Name:  admin.Name,
+	}
+
+	_, err = NewGeneralService(nil).EmailVerify(c, emailVerifyData)
+	if err != nil {
+		s.repo.DeleteAdminById(admin.ID)
+		return err
+	}
+	return nil
 }
 
 func (s *AdminService) FindAdminByEmail(email string) (*models.Admin, error) {

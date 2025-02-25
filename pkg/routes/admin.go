@@ -17,6 +17,6 @@ func SetupAdminRoutes(router *gin.Engine, db *mongo.Database) {
 	adminRoutes := router.Group("/admins")
 	{
 		adminRoutes.POST("/register", adminHandler.RegisterUser)
-		adminRoutes.POST("/login", adminHandler.Login, adminHandler.Login)
+		adminRoutes.POST("/login", adminHandler.Login)
 	}
 }
