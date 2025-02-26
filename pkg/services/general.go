@@ -27,7 +27,7 @@ func (s *GeneralService) EmailVerify(c *gin.Context, emailVerify types.EmailVeri
 	client := mailsvc.NewEmailServiceClient(conn)
 	req := &mailsvc.MailServiceRequest{Email: emailVerify.Email, Name: emailVerify.Name}
 
-	mailSvcRes, err := client.EmailService(context.TODO(), req)
+	mailSvcRes, err := client.SendVerificationEmail(context.TODO(), req)
 	if err != nil {
 		return nil, err
 	}
