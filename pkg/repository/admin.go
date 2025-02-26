@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"log"
 
 	"aas.dev/pkg/models/types"
 
@@ -50,10 +51,15 @@ func (repo *AdminRepo) CreateAdmin(admin *models.Admin) error {
 }
 
 func (repo *AdminRepo) GetAdminByEmail(email string) (*models.Admin, error) {
-	var admin models.Admin
+	var admin *models.Admin
 	err := repo.collection.FindOne(context.Background(), bson.M{"email": email}).Decode(&admin)
-	if err == mongo.ErrNoDocuments {
-		return nil, errors.New("admin user not found")
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.New("admin user not found")
+		}
+		log.Println("Error fetching admin by email:", email, "Error:", err)
+		return nil, err
 	}
-	return &admin, err
+	return admin, nil
 }

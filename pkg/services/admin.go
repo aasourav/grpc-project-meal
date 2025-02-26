@@ -60,7 +60,8 @@ func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error 
 
 	_, err = NewGeneralService(nil).EmailVerify(c, emailVerifyData)
 	if err != nil {
-		s.repo.DeleteAdminById(admin.ID)
+		adminDoc, _ = s.FindAdminByEmail(admin.Email)
+		s.repo.DeleteAdminById(adminDoc.ID)
 		return err
 	}
 	return nil
