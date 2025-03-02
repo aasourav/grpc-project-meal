@@ -3,7 +3,7 @@ module aas.dev
 go 1.22.2
 
 require (
-	github.com/aasourav/proto v0.0.0-20250226031829-c31a56325a68
+	github.com/aasourav/proto v0.0.0-20250227103855-c6eb0dcc3a70
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/golang-jwt/jwt/v5 v5.2.1

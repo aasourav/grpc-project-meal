@@ -11,7 +11,9 @@ import (
 
 func SetupAdminRoutes(router *gin.Engine, db *mongo.Database) {
 	adminRepo := repository.NewAdminRepo(db)
-	adminService := services.NewAdminService(adminRepo)
+	varificationRepo := repository.NewVerificationRepo(db, true)
+
+	adminService := services.NewAdminService(adminRepo, varificationRepo)
 	adminHandler := handlers.NewAdminHandler(adminService)
 
 	adminRoutes := router.Group("/admins")

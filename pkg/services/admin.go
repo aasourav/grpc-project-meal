@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"aas.dev/pkg/interfaces"
@@ -12,11 +13,12 @@ import (
 )
 
 type AdminService struct {
-	repo interfaces.AdminRepository
+	adminRepo        interfaces.AdminRepository
+	verificationRepo interfaces.VerifiactionRepository
 }
 
-func NewAdminService(repo interfaces.AdminRepository) *AdminService {
-	return &AdminService{repo: repo}
+func NewAdminService(adminRepo interfaces.AdminRepository, verificationRepo interfaces.VerifiactionRepository) *AdminService {
+	return &AdminService{adminRepo: adminRepo, verificationRepo: verificationRepo}
 }
 
 func (s *AdminService) LoginAdmin(admin *models.AdminLogin, c *gin.Context) (*models.Admin, error) {
@@ -36,7 +38,8 @@ func (s *AdminService) LoginAdmin(admin *models.AdminLogin, c *gin.Context) (*mo
 		return nil, errors.New("account still not approved. please contact with the authority")
 	}
 
-	token, _ := utils.GenerateJWT(adminDoc)
+	expires := time.Now().Add(time.Minute * 30).Unix()
+	token, _ := utils.GenerateJWT(adminDoc, "user", expires)
 	c.SetCookie("admin-token", token, 3600, "/", "", false, true)
 	return adminDoc, nil
 }
@@ -48,25 +51,31 @@ func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error 
 	}
 	admin.CreatedAt = time.Now()
 	admin.UpdatedAt = admin.CreatedAt
-	err := s.repo.CreateAdmin(admin)
+	admin.Password, _ = utils.HashPassword(admin.Password)
+	err := s.adminRepo.CreateAdmin(admin)
 	if err != nil {
 		return err
 	}
 
-	emailVerifyData := types.EmailVerifyTypes{
-		Email: admin.Email,
-		Name:  admin.Name,
-	}
+	expires := time.Now().Add(time.Second * 120).Unix()
+	jwt, _ := utils.GenerateJWT(admin.Email, "email", expires)
 
+	verifyLink := utils.GetBaseURL(c) + fmt.Sprintf("/admin/verify?u=%s", jwt)
+
+	emailVerifyData := types.EmailVerifyTypes{
+		Email:           admin.Email,
+		VerificaionLink: verifyLink,
+		Name:            admin.Name,
+	}
 	_, err = NewGeneralService(nil).EmailVerify(c, emailVerifyData)
 	if err != nil {
 		adminDoc, _ = s.FindAdminByEmail(admin.Email)
-		s.repo.DeleteAdminById(adminDoc.ID)
+		s.adminRepo.DeleteAdminById(adminDoc.ID)
 		return err
 	}
 	return nil
 }
 
 func (s *AdminService) FindAdminByEmail(email string) (*models.Admin, error) {
-	return s.repo.GetAdminByEmail(email)
+	return s.adminRepo.GetAdminByEmail(email)
 }

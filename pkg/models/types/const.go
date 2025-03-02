@@ -2,6 +2,7 @@ package types
 
 const (
 	USERS         = "users"
+	VERIFICATION  = "verifications"
 	PENDING_USERS = "pendingusers"
 	ADMINS        = "admins"
 	SUPER_ADMIN   = "superadmins"
