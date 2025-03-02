@@ -18,6 +18,14 @@ func NewAdminHandler(service *services.AdminService) *AdminHandler {
 	return &AdminHandler{service: service}
 }
 
+func (h *AdminHandler) VerifyAccount(c *gin.Context) {
+	if err := h.service.VerifyAdmin(c); err != nil {
+		utils.ErrorJSON(c, err, http.StatusBadRequest)
+		fmt.Println(err.Error())
+		return
+	}
+}
+
 func (h *AdminHandler) Login(c *gin.Context) {
 	var admin models.AdminLogin
 
@@ -51,7 +59,7 @@ func (h *AdminHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.RegisterAdmin(c,&admin); err != nil {
+	if err := h.service.RegisterAdmin(c, &admin); err != nil {
 		utils.ErrorJSON(c, err, http.StatusBadRequest)
 		fmt.Println(err.Error())
 		return

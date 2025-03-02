@@ -20,5 +20,6 @@ func SetupAdminRoutes(router *gin.Engine, db *mongo.Database) {
 	{
 		adminRoutes.POST("/register", adminHandler.RegisterUser)
 		adminRoutes.POST("/login", adminHandler.Login)
+		adminRoutes.GET("/verify", adminHandler.VerifyAccount)
 	}
 }

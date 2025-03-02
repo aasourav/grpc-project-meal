@@ -13,3 +13,7 @@ const (
 	ADMIN_COOKIE           = "admin"
 	USER_COOKIE            = "user"
 )
+
+const (
+	VERIFICATION_EXPIRY_SECONDS = 120
+)

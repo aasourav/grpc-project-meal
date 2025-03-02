@@ -35,6 +35,24 @@ func (repo *AdminRepo) DeleteAdminById(id string) error {
 	return nil
 }
 
+func (repo *AdminRepo) UpdateAdminById(admin *models.Admin) error {
+	// adminBson, _ := bson.Marshal(admin)
+	updateFields := bson.M{
+		"$set": bson.M{
+			"isEmailApproved": admin.IsEmailApproved,
+			// Add more fields as needed
+		},
+	}
+	filterData := bson.M{
+		"email": admin.Email,
+	}
+	_, err := repo.collection.UpdateOne(context.TODO(), filterData, updateFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (repo *AdminRepo) CreateAdmin(admin *models.Admin) error {
 	userDoc := bson.M{
 		"email":              admin.Email,

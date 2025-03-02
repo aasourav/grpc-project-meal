@@ -2,7 +2,8 @@ package repository
 
 import (
 	"context"
-	"time"
+	"errors"
+	"log"
 
 	"aas.dev/pkg/models/types"
 	models "aas.dev/pkg/models/verification"
@@ -19,10 +20,10 @@ type VerificationRepo struct {
 }
 
 func NewVerificationRepo(db *mongo.Database, isIndexed bool) interfaces.VerifiactionRepository {
-	expires := time.Now().Add(time.Second * 120).Unix()
+	// expires := time.Now().Add(time.Second * 10).Unix()
 	indexModel := mongo.IndexModel{
 		Keys:    bson.M{"createdAt": 1},
-		Options: options.Index().SetExpireAfterSeconds(int32(expires)),
+		Options: options.Index().SetExpireAfterSeconds(types.VERIFICATION_EXPIRY_SECONDS),
 	}
 
 	if isIndexed {
@@ -30,6 +31,28 @@ func NewVerificationRepo(db *mongo.Database, isIndexed bool) interfaces.Verifiac
 	}
 
 	return &VerificationRepo{collection: db.Collection(types.VERIFICATION)}
+}
+
+func (repo *VerificationRepo) DeleteVeruficationByEmail(email string) error {
+	_, err := repo.collection.DeleteOne(context.TODO(), bson.M{"email": email})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *VerificationRepo) GetVerificationDocByEmail(email string) (*models.Verification, error) {
+	var verificationData *models.Verification
+	err := repo.collection.FindOne(context.Background(), bson.M{"email": email}).Decode(&verificationData)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.New("admin user not found")
+		}
+		log.Println("Error fetching verification data by email:", email, "Error:", err)
+		return nil, err
+	}
+	return verificationData, nil
 }
 
 func (repo *VerificationRepo) CreateVerificationRepo(verificationData *models.Verification) error {

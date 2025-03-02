@@ -8,6 +8,7 @@ import (
 	"aas.dev/pkg/interfaces"
 	models "aas.dev/pkg/models/admin"
 	"aas.dev/pkg/models/types"
+	verificationModels "aas.dev/pkg/models/verification"
 	"aas.dev/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -44,6 +45,45 @@ func (s *AdminService) LoginAdmin(admin *models.AdminLogin, c *gin.Context) (*mo
 	return adminDoc, nil
 }
 
+func (s *AdminService) VerifyAdmin(c *gin.Context) error {
+	if c.Query("u") == "" {
+		return errors.New("invalid request")
+	}
+
+	email, err := utils.VerifyJWT(c.Query("u"), "email")
+	if err != nil {
+		return err
+	}
+
+	verificationData, err := s.verificationRepo.GetVerificationDocByEmail(fmt.Sprintf("%v", email))
+	if err != nil {
+		return err
+	}
+
+	if time.Since(verificationData.CreatedAt) > types.VERIFICATION_EXPIRY_SECONDS*time.Second {
+		return errors.New("verification link expired")
+	}
+
+	err = s.verificationRepo.DeleteVeruficationByEmail(fmt.Sprintf("%v", email))
+	if err != nil {
+		return err
+	}
+
+	adminDoc, err := s.FindAdminByEmail(fmt.Sprintf("%v", email))
+	if err != nil || adminDoc == nil {
+		return err
+	}
+
+	adminDoc.IsEmailApproved = true
+
+	err = s.adminRepo.UpdateAdminById(adminDoc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error {
 	adminDoc, _ := s.FindAdminByEmail(admin.Email)
 	if adminDoc != nil {
@@ -60,7 +100,7 @@ func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error 
 	expires := time.Now().Add(time.Second * 120).Unix()
 	jwt, _ := utils.GenerateJWT(admin.Email, "email", expires)
 
-	verifyLink := utils.GetBaseURL(c) + fmt.Sprintf("/admin/verify?u=%s", jwt)
+	verifyLink := utils.GetBaseURL(c) + fmt.Sprintf("/admins/verify?u=%s", jwt)
 
 	emailVerifyData := types.EmailVerifyTypes{
 		Email:           admin.Email,
@@ -73,6 +113,12 @@ func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error 
 		s.adminRepo.DeleteAdminById(adminDoc.ID)
 		return err
 	}
+
+	mailData := &verificationModels.Verification{
+		Email:     admin.Email,
+		CreatedAt: admin.CreatedAt,
+	}
+	s.verificationRepo.CreateVerificationRepo(mailData)
 	return nil
 }
 
