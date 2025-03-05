@@ -81,3 +81,29 @@ func (repo *AdminRepo) GetAdminByEmail(email string) (*models.Admin, error) {
 	}
 	return admin, nil
 }
+
+func (repo *AdminRepo) GetAdmins() (*[]models.Admin, error) {
+	var adminDocs []models.Admin // Use a non-pointer slice here
+	// cursor, err := repo.collection.Find(context.Background(), bson.M{"email": email})
+	cursor, err := repo.collection.Find(context.Background(), bson.M{})
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.New("admin user not found")
+		}
+		// log.Println("Error fetching admin by email:", email, "Error:", err)
+		return nil, err
+	}
+
+	defer cursor.Close(context.Background())
+
+	// Pass a pointer to the slice (not a pointer to a pointer)
+	if err := cursor.All(context.Background(), &adminDocs); err != nil {
+		log.Println("Error decoding admins:", err)
+		return nil, err
+	}
+
+	log.Println("Admins found by email:", adminDocs[0].Email)
+
+	return &adminDocs, nil // Return a pointer to the slice
+}

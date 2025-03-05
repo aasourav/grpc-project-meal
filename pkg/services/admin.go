@@ -84,6 +84,23 @@ func (s *AdminService) VerifyAdmin(c *gin.Context) error {
 	return nil
 }
 
+func (s *AdminService) GetAdminUsers() (*[]models.Admin, error) {
+	adminUser, err := s.adminRepo.GetAdmins()
+	if err != nil {
+		return nil, err
+	}
+
+	return adminUser, nil
+}
+
+func (s *AdminService) GetAdminUserByEmail(email string) (*models.Admin, error) {
+	adminUser, err := s.adminRepo.GetAdminByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	return adminUser, nil
+}
+
 func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error {
 	adminDoc, _ := s.FindAdminByEmail(admin.Email)
 	if adminDoc != nil {
