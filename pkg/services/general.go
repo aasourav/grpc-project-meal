@@ -25,14 +25,12 @@ func (s *GeneralService) EmailVerify(c *gin.Context, emailVerify types.EmailVeri
 	}
 
 	client := mailsvc.NewEmailServiceClient(conn)
-	req := &mailsvc.MailServiceRequest{Email: emailVerify.Email, Name: emailVerify.Name}
+	req := &mailsvc.MailServiceRequest{Email: emailVerify.Email, Name: emailVerify.Name, VerificationLink: emailVerify.VerificaionLink}
 
-	mailSvcRes, err := client.EmailService(context.TODO(), req)
+	mailSvcRes, err := client.SendVerificationEmail(context.TODO(), req)
 	if err != nil {
 		return nil, err
 	}
 
-	// token, _ := utils.GenerateJWT(emailVerify.Email)
-	// c.SetCookie(types.VERIFIED_EAMAIL_COOKIE, token, 3600, "/", "", false, true)
 	return mailSvcRes, nil
 }

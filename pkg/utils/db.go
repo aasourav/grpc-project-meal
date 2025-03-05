@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"aas.dev/internal/config"
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,39 +11,39 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var MongoDatabase *mongo.Database
+
 type Database struct {
 	Client *mongo.Client
 	DB     *mongo.Database
 }
 
-func ConnectDB(cfg *config.Config) *mongo.Database {
+func init() {
+	cfg := config.LoadConfig()
+	ConnectDB(cfg)
+}
 
-	// var uri string
-	// if uri = os.Getenv("MONGODB_URI"); uri == "" {
-	// 	log.Fatal("You must set your 'MONGODB_URI' environment variable. See\n\t https://docs.mongodb.com/drivers/go/current/usage-examples/")
-	// }
+func ConnectDB(cfg *config.Config) {
 
-	// Use the SetServerAPIOptions() method to set the Stable API version to 1
+	// Set the Stable API version for MongoDB
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(cfg.DBURI).SetServerAPIOptions(serverAPI)
-	// Create a new client and connect to the server
+
+	// Create a new MongoDB client and connect
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
-		panic(err)
+		log.Fatal("Failed to connect to MongoDB:", err)
 	}
 
-	// defer func() {
-	// 	if err = client.Disconnect(context.TODO()); err != nil {
-	// 		panic(err)
-	// 	}
-	// }()
-
-	// Send a ping to confirm a successful connection
+	// Ping the database to confirm the connection
 	var result bson.M
 	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Decode(&result); err != nil {
-		panic(err)
+		log.Fatal("Failed to ping MongoDB:", err)
 	}
 
+	// If successful, log and initialize the MongoDatabase variable
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
-	return client.Database("myapp")
+	// MongoDatabase = client.Database(cfg.DBName) // Use the DB name from config
+	MongoDatabase = client.Database("myapp") // Use the DB name from config
+
 }

@@ -8,6 +8,7 @@ import (
 	"aas.dev/pkg/services"
 	"aas.dev/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/graphql-go/graphql"
 )
 
 type AdminHandler struct {
@@ -16,6 +17,43 @@ type AdminHandler struct {
 
 func NewAdminHandler(service *services.AdminService) *AdminHandler {
 	return &AdminHandler{service: service}
+}
+
+func (h *AdminHandler) VerifyAccount(c *gin.Context) {
+	if err := h.service.VerifyAdmin(c); err != nil {
+		utils.ErrorJSON(c, err, http.StatusBadRequest)
+		fmt.Println(err.Error())
+		return
+	}
+}
+
+func (h *AdminHandler) GetAdmins() (interface{}, error) {
+	admins, err := h.service.GetAdminUsers()
+	if err != nil {
+		return nil, err
+	}
+
+	return admins, nil
+}
+
+func (h *AdminHandler) GetAdminByEmail(p graphql.ResolveParams) (interface{}, error) {
+	email := p.Args["email"].(string)
+
+	admins, err := h.service.GetAdminUserByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	return admins, nil
+}
+
+func (h *AdminHandler) GetAdminList(p graphql.ResolveParams) (interface{}, error) {
+	admins, err := h.service.GetAdminUsers()
+	if err != nil {
+		return nil, err
+	}
+
+	return admins, nil
 }
 
 func (h *AdminHandler) Login(c *gin.Context) {
@@ -51,7 +89,7 @@ func (h *AdminHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.RegisterAdmin(c,&admin); err != nil {
+	if err := h.service.RegisterAdmin(c, &admin); err != nil {
 		utils.ErrorJSON(c, err, http.StatusBadRequest)
 		fmt.Println(err.Error())
 		return

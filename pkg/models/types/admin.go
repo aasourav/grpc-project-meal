@@ -37,7 +37,8 @@ type Admin struct {
 	IsApproved              bool       `bson:"isApproved" json:"isApproved"`
 	PendingAdminApprovalIds []string   `bson:"pendingAdminApprovalIds" json:"pendingAdminApprovalIds"`
 	Department              Department `json:"department" bson:"department" validate:"required,oneof=TECHNOLOGY HR MARKETING FINANCE"`
-	AdminLogin
+	Email                   string     `json:"email" bson:"email" validate:"required,email"`
+	Password                string     `json:"password" bson:"password" validate:"required,min=6"`
 }
 
 type AdminLogin struct {

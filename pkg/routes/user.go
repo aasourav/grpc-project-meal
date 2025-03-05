@@ -4,12 +4,13 @@ import (
 	"aas.dev/pkg/handlers"
 	"aas.dev/pkg/repository"
 	"aas.dev/pkg/services"
+	"aas.dev/pkg/utils"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func SetupUserRoutes(router *gin.Engine, db *mongo.Database) {
+func SetupUserRoutes(router *gin.Engine) {
+	db := utils.MongoDatabase
 	// user
 	userRepo := repository.NewUserRepo(db)
 	userService := services.NewUserService(userRepo)

@@ -2,21 +2,24 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"aas.dev/pkg/interfaces"
 	models "aas.dev/pkg/models/admin"
 	"aas.dev/pkg/models/types"
+	verificationModels "aas.dev/pkg/models/verification"
 	"aas.dev/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
 type AdminService struct {
-	repo interfaces.AdminRepository
+	adminRepo        interfaces.AdminRepository
+	verificationRepo interfaces.VerifiactionRepository
 }
 
-func NewAdminService(repo interfaces.AdminRepository) *AdminService {
-	return &AdminService{repo: repo}
+func NewAdminService(adminRepo interfaces.AdminRepository, verificationRepo interfaces.VerifiactionRepository) *AdminService {
+	return &AdminService{adminRepo: adminRepo, verificationRepo: verificationRepo}
 }
 
 func (s *AdminService) LoginAdmin(admin *models.AdminLogin, c *gin.Context) (*models.Admin, error) {
@@ -36,9 +39,66 @@ func (s *AdminService) LoginAdmin(admin *models.AdminLogin, c *gin.Context) (*mo
 		return nil, errors.New("account still not approved. please contact with the authority")
 	}
 
-	token, _ := utils.GenerateJWT(adminDoc)
+	expires := time.Now().Add(time.Minute * 30).Unix()
+	token, _ := utils.GenerateJWT(adminDoc, "user", expires)
 	c.SetCookie("admin-token", token, 3600, "/", "", false, true)
 	return adminDoc, nil
+}
+
+func (s *AdminService) VerifyAdmin(c *gin.Context) error {
+	if c.Query("u") == "" {
+		return errors.New("invalid request")
+	}
+
+	email, err := utils.VerifyJWT(c.Query("u"), "email")
+	if err != nil {
+		return err
+	}
+
+	verificationData, err := s.verificationRepo.GetVerificationDocByEmail(fmt.Sprintf("%v", email))
+	if err != nil {
+		return err
+	}
+
+	if time.Since(verificationData.CreatedAt) > types.VERIFICATION_EXPIRY_SECONDS*time.Second {
+		return errors.New("verification link expired")
+	}
+
+	err = s.verificationRepo.DeleteVeruficationByEmail(fmt.Sprintf("%v", email))
+	if err != nil {
+		return err
+	}
+
+	adminDoc, err := s.FindAdminByEmail(fmt.Sprintf("%v", email))
+	if err != nil || adminDoc == nil {
+		return err
+	}
+
+	adminDoc.IsEmailApproved = true
+
+	err = s.adminRepo.UpdateAdminById(adminDoc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *AdminService) GetAdminUsers() (*[]models.Admin, error) {
+	adminUser, err := s.adminRepo.GetAdmins()
+	if err != nil {
+		return nil, err
+	}
+
+	return adminUser, nil
+}
+
+func (s *AdminService) GetAdminUserByEmail(email string) (*models.Admin, error) {
+	adminUser, err := s.adminRepo.GetAdminByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	return adminUser, nil
 }
 
 func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error {
@@ -48,24 +108,37 @@ func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error 
 	}
 	admin.CreatedAt = time.Now()
 	admin.UpdatedAt = admin.CreatedAt
-	err := s.repo.CreateAdmin(admin)
+	admin.Password, _ = utils.HashPassword(admin.Password)
+	err := s.adminRepo.CreateAdmin(admin)
 	if err != nil {
 		return err
 	}
+
+	expires := time.Now().Add(time.Second * 120).Unix()
+	jwt, _ := utils.GenerateJWT(admin.Email, "email", expires)
+
+	verifyLink := utils.GetBaseURL(c) + fmt.Sprintf("/admins/verify?u=%s", jwt)
 
 	emailVerifyData := types.EmailVerifyTypes{
-		Email: admin.Email,
-		Name:  admin.Name,
+		Email:           admin.Email,
+		VerificaionLink: verifyLink,
+		Name:            admin.Name,
 	}
-
 	_, err = NewGeneralService(nil).EmailVerify(c, emailVerifyData)
 	if err != nil {
-		s.repo.DeleteAdminById(admin.ID)
+		adminDoc, _ = s.FindAdminByEmail(admin.Email)
+		s.adminRepo.DeleteAdminById(adminDoc.ID)
 		return err
 	}
+
+	mailData := &verificationModels.Verification{
+		Email:     admin.Email,
+		CreatedAt: admin.CreatedAt,
+	}
+	s.verificationRepo.CreateVerificationRepo(mailData)
 	return nil
 }
 
 func (s *AdminService) FindAdminByEmail(email string) (*models.Admin, error) {
-	return s.repo.GetAdminByEmail(email)
+	return s.adminRepo.GetAdminByEmail(email)
 }
