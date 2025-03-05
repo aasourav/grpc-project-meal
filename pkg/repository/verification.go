@@ -33,23 +33,23 @@ func NewVerificationRepo(db *mongo.Database, isIndexed bool) interfaces.Verifiac
 	return &VerificationRepo{collection: db.Collection(types.VERIFICATION)}
 }
 
-func (repo *VerificationRepo) DeleteVeruficationByEmail(email string) error {
-	_, err := repo.collection.DeleteOne(context.TODO(), bson.M{"email": email})
+func (repo *VerificationRepo) DeleteVeruficationByUserId(userId string) error {
+	_, err := repo.collection.DeleteOne(context.TODO(), bson.M{"userId": userId})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (repo *VerificationRepo) GetVerificationDocByEmail(email string) (*models.Verification, error) {
+func (repo *VerificationRepo) GetVerificationDocByUserId(userId string) (*models.Verification, error) {
 	var verificationData *models.Verification
-	err := repo.collection.FindOne(context.Background(), bson.M{"email": email}).Decode(&verificationData)
+	err := repo.collection.FindOne(context.Background(), bson.M{"userId": userId}).Decode(&verificationData)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, errors.New("admin user not found")
 		}
-		log.Println("Error fetching verification data by email:", email, "Error:", err)
+		log.Println("Error fetching verification data by userId:", userId, "Error:", err)
 		return nil, err
 	}
 	return verificationData, nil
@@ -57,6 +57,7 @@ func (repo *VerificationRepo) GetVerificationDocByEmail(email string) (*models.V
 
 func (repo *VerificationRepo) CreateVerificationRepo(verificationData *models.Verification) error {
 	data := bson.M{
+		"userId":    verificationData.UserId,
 		"email":     verificationData.Email,
 		"createdAt": verificationData.CreatedAt,
 	}

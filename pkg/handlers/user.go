@@ -30,11 +30,12 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.RegisterUser(&user); err != nil {
+	if err := h.service.RegisterUser(c, &user); err != nil {
 		utils.ErrorJSON(c, err, http.StatusBadRequest)
 		fmt.Println(err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, user)
+	utils.SuccessJSON(c, "successfully registered. an email will sent to your mail for approval", http.StatusCreated, nil)
+	// c.JSON(http.StatusCreated, user)
 }

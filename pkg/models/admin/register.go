@@ -9,7 +9,6 @@ import (
 
 type Admin struct {
 	ID                      string           `json:"id" bson:"_id,omitempty"`
-	UserId                  string           `json:"userId" bson:"userId" validate:"required"`
 	Name                    string           `json:"name" bson:"name" validate:"required"`
 	Role                    types.AdminRole  `json:"role" bson:"role" validate:"required,oneof=SADMIN ADMIN"`
 	DepartmentInCharge      types.Department `json:"departmentInCharge" bson:"departmentInCharge" validate:"required,oneof=TECHNOLOGY HR MARKETING FINANCE"`

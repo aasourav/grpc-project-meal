@@ -1,12 +1,31 @@
 package models
 
 import (
+	"time"
+
 	"aas.dev/pkg/models/types"
 	"github.com/go-playground/validator/v10"
 )
 
 type User struct {
-	types.User
+	ID                   string                        `json:"id" bson:"_id,omitempty"`
+	Name                 string                        `json:"name" bson:"name" validate:"required,min=2"`
+	IsEmailApproved      bool                          `bson:"isEmailApproved" json:"isEmailApproved"`
+	Email                string                        `json:"email" bson:"email" validate:"required,email"`
+	Password             string                        `json:"password" bson:"password" validate:"required,min=6"`
+	EmployeeId           string                        `json:"employeeId" bson:"employeeId" validate:"required"`
+	WeeklyPlan           []bool                        `json:"weeklyplan" bson:"weeklyPlan" validate:"required,len=7"` // last weekly plan for check every element
+	CreatedAt            time.Time                     `bson:"createdAt" json:"createdAt"`
+	UpdatedAt            time.Time                     `bson:"updatedAt" json:"updatedAt"`
+	Department           types.Department              `json:"department" bson:"department" validate:"required,oneof=TECHNOLOGY HR MARKETING FINANCE"`
+	IsApproved           bool                          `bson:"isApproved" json:"isApproved"`
+	ApprovedById         string                        `bson:"approvedById" json:"approvedById"`
+	RequestNewWeeklyPlan *[]types.RequestNewWeeklyPlan `bson:"requestNewWeeklyPlan" json:"requestNewWeeklyPlan"`
+}
+
+type UserLogin struct {
+	Email    string `json:"email" bson:"email" validate:"required,email"`
+	Password string `json:"password" bson:"password" validate:"required,min=6"`
 }
 
 var userValidate = validator.New()

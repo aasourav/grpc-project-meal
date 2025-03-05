@@ -95,6 +95,6 @@ func (h *AdminHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessJSON(c, "successfully registered. an email will sent to your mail after approval", http.StatusCreated, nil)
+	utils.SuccessJSON(c, "successfully registered. an email will sent to your mail for approval", http.StatusCreated, nil)
 
 }
