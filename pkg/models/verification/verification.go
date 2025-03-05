@@ -7,6 +7,7 @@ import (
 )
 
 type Verification struct {
+	UserId    string    `json:"userId" bson:"userId" validate:"required"`
 	Email     string    `json:"email" bson:"email" validate:"required,email"`
 	CreatedAt time.Time `json:"createdAt" bson:"createdAt" validate:"required"`
 }

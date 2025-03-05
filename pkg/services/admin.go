@@ -11,6 +11,7 @@ import (
 	verificationModels "aas.dev/pkg/models/verification"
 	"aas.dev/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type AdminService struct {
@@ -50,12 +51,12 @@ func (s *AdminService) VerifyAdmin(c *gin.Context) error {
 		return errors.New("invalid request")
 	}
 
-	email, err := utils.VerifyJWT(c.Query("u"), "email")
+	userId, err := utils.VerifyJWT(c.Query("u"), "userId")
 	if err != nil {
 		return err
 	}
 
-	verificationData, err := s.verificationRepo.GetVerificationDocByEmail(fmt.Sprintf("%v", email))
+	verificationData, err := s.verificationRepo.GetVerificationDocByUserId(fmt.Sprintf("%v", userId))
 	if err != nil {
 		return err
 	}
@@ -64,12 +65,13 @@ func (s *AdminService) VerifyAdmin(c *gin.Context) error {
 		return errors.New("verification link expired")
 	}
 
-	err = s.verificationRepo.DeleteVeruficationByEmail(fmt.Sprintf("%v", email))
+	err = s.verificationRepo.DeleteVeruficationByUserId(fmt.Sprintf("%v", userId))
 	if err != nil {
 		return err
 	}
 
-	adminDoc, err := s.FindAdminByEmail(fmt.Sprintf("%v", email))
+	objectId, _ := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userId))
+	adminDoc, err := s.FindAdminById(objectId)
 	if err != nil || adminDoc == nil {
 		return err
 	}
@@ -114,8 +116,13 @@ func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error 
 		return err
 	}
 
+	adminDoc, err = s.FindAdminByEmail(admin.Email)
+	if err != nil {
+		return errors.New("admin user find error: " + err.Error())
+	}
+
 	expires := time.Now().Add(time.Second * 120).Unix()
-	jwt, _ := utils.GenerateJWT(admin.Email, "email", expires)
+	jwt, _ := utils.GenerateJWT(adminDoc.ID, "userId", expires)
 
 	verifyLink := utils.GetBaseURL(c) + fmt.Sprintf("/admins/verify?u=%s", jwt)
 
@@ -126,7 +133,6 @@ func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error 
 	}
 	_, err = NewGeneralService(nil).EmailVerify(c, emailVerifyData)
 	if err != nil {
-		adminDoc, _ = s.FindAdminByEmail(admin.Email)
 		s.adminRepo.DeleteAdminById(adminDoc.ID)
 		return err
 	}
@@ -134,11 +140,17 @@ func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error 
 	mailData := &verificationModels.Verification{
 		Email:     admin.Email,
 		CreatedAt: admin.CreatedAt,
+		UserId:    adminDoc.ID,
 	}
+
 	s.verificationRepo.CreateVerificationRepo(mailData)
 	return nil
 }
 
 func (s *AdminService) FindAdminByEmail(email string) (*models.Admin, error) {
 	return s.adminRepo.GetAdminByEmail(email)
+}
+
+func (s *AdminService) FindAdminById(id primitive.ObjectID) (*models.Admin, error) {
+	return s.adminRepo.GetAdminById(id)
 }

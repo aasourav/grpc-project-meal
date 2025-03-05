@@ -13,17 +13,13 @@ func SetupUserRoutes(router *gin.Engine) {
 	db := utils.MongoDatabase
 	// user
 	userRepo := repository.NewUserRepo(db)
-	userService := services.NewUserService(userRepo)
+	varificationRepo := repository.NewVerificationRepo(db, true)
+	userService := services.NewUserService(userRepo, varificationRepo)
 	userHandler := handlers.NewUserHandler(userService)
-
-	// pending user
-	pendingUserRepo := repository.NewUserRepo(db)
-	pendingUserRepoService := services.NewUserService(pendingUserRepo)
-	pendingUserRepoHandler := handlers.NewUserHandler(pendingUserRepoService)
 
 	userRoutes := router.Group("/users")
 	{
-		userRoutes.POST("/register", pendingUserRepoHandler.RegisterUser)
+		userRoutes.POST("/register", userHandler.RegisterUser)
 		userRoutes.POST("/login", userHandler.RegisterUser)
 		// userRoutes.POST("/change-password", pendingUserRepoHandler.RegisterUser)
 	}
