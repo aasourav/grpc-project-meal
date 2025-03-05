@@ -35,6 +35,24 @@ func (repo *AdminRepo) DeleteAdminById(id string) error {
 	return nil
 }
 
+func (repo *AdminRepo) UpdateAdminById(admin *models.Admin) error {
+	// adminBson, _ := bson.Marshal(admin)
+	updateFields := bson.M{
+		"$set": bson.M{
+			"isEmailApproved": admin.IsEmailApproved,
+			// Add more fields as needed
+		},
+	}
+	filterData := bson.M{
+		"email": admin.Email,
+	}
+	_, err := repo.collection.UpdateOne(context.TODO(), filterData, updateFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (repo *AdminRepo) CreateAdmin(admin *models.Admin) error {
 	userDoc := bson.M{
 		"email":              admin.Email,
@@ -62,4 +80,30 @@ func (repo *AdminRepo) GetAdminByEmail(email string) (*models.Admin, error) {
 		return nil, err
 	}
 	return admin, nil
+}
+
+func (repo *AdminRepo) GetAdmins() (*[]models.Admin, error) {
+	var adminDocs []models.Admin // Use a non-pointer slice here
+	// cursor, err := repo.collection.Find(context.Background(), bson.M{"email": email})
+	cursor, err := repo.collection.Find(context.Background(), bson.M{})
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.New("admin user not found")
+		}
+		// log.Println("Error fetching admin by email:", email, "Error:", err)
+		return nil, err
+	}
+
+	defer cursor.Close(context.Background())
+
+	// Pass a pointer to the slice (not a pointer to a pointer)
+	if err := cursor.All(context.Background(), &adminDocs); err != nil {
+		log.Println("Error decoding admins:", err)
+		return nil, err
+	}
+
+	log.Println("Admins found by email:", adminDocs[0].Email)
+
+	return &adminDocs, nil // Return a pointer to the slice
 }
