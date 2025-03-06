@@ -47,7 +47,7 @@ func (repo *VerificationRepo) GetVerificationDocByUserId(userId string) (*models
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, errors.New("admin user not found")
+			return nil, errors.New("user not found")
 		}
 		log.Println("Error fetching verification data by userId:", userId, "Error:", err)
 		return nil, err
