@@ -9,6 +9,7 @@ import (
 	"aas.dev/pkg/models/types"
 	models "aas.dev/pkg/models/user"
 	verificationModels "aas.dev/pkg/models/verification"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"aas.dev/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,47 @@ type UserService struct {
 
 func NewUserService(userRepo interfaces.UserRepository, verificationRepo interfaces.VerifiactionRepository) *UserService {
 	return &UserService{userRepo: userRepo, verificationRepo: verificationRepo}
+}
+
+func (s *UserService) VerifyUser(c *gin.Context) error {
+	if c.Query("u") == "" {
+		return errors.New("invalid request")
+	}
+
+	userId, err := utils.VerifyJWT(c.Query("u"), "userId")
+	if err != nil {
+		return err
+	}
+
+	verificationData, err := s.verificationRepo.GetVerificationDocByUserId(fmt.Sprintf("%v", userId))
+	if err != nil {
+		return err
+	}
+
+	if time.Since(verificationData.CreatedAt) > types.VERIFICATION_EXPIRY_SECONDS*time.Second {
+		return errors.New("verification link expired")
+	}
+
+	err = s.verificationRepo.DeleteVeruficationByUserId(fmt.Sprintf("%v", userId))
+	if err != nil {
+		return err
+	}
+
+	objectId, _ := primitive.ObjectIDFromHex(fmt.Sprintf("%v", userId))
+	userDoc, err := s.FindUserById(objectId)
+	if err != nil || userDoc == nil {
+		return err
+	}
+
+	userDoc.IsEmailApproved = true
+
+	err = s.userRepo.UpdateUserById(userDoc)
+	if err != nil {
+		return err
+	}
+	fmt.Println("OOOWWWMHH 5")
+
+	return nil
 }
 
 func (s *UserService) RegisterUser(c *gin.Context, user *models.User) error {
@@ -42,7 +84,7 @@ func (s *UserService) RegisterUser(c *gin.Context, user *models.User) error {
 	}
 
 	expires := time.Now().Add(time.Second * 120).Unix()
-	jwt, _ := utils.GenerateJWT(user.Email, "userId", expires)
+	jwt, _ := utils.GenerateJWT(userDoc.ID, "userId", expires)
 	verifyLink := utils.GetBaseURL(c) + fmt.Sprintf("/users/verify?u=%s", jwt)
 
 	emailVerifyData := types.EmailVerifyTypes{
@@ -69,4 +111,8 @@ func (s *UserService) RegisterUser(c *gin.Context, user *models.User) error {
 
 func (s *UserService) FindUserByEmail(email string) (*models.User, error) {
 	return s.userRepo.GetUserByEmail(email)
+}
+
+func (s *UserService) FindUserById(id primitive.ObjectID) (*models.User, error) {
+	return s.userRepo.GetUserById(id)
 }

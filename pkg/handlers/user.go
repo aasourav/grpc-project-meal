@@ -18,6 +18,14 @@ func NewUserHandler(service *services.UserService) *UserHandler {
 	return &UserHandler{service: service}
 }
 
+func (h *UserHandler) VerifyAccount(c *gin.Context) {
+	if err := h.service.VerifyUser(c); err != nil {
+		utils.ErrorJSON(c, err, http.StatusBadRequest)
+		fmt.Println(err.Error())
+		return
+	}
+}
+
 func (h *UserHandler) RegisterUser(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {

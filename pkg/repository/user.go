@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"log"
 
 	"aas.dev/pkg/models/types"
 	"aas.dev/pkg/utils"
@@ -59,4 +60,36 @@ func (repo *UserRepo) GetUserByEmail(email string) (*models.User, error) {
 		return nil, errors.New("user not found")
 	}
 	return &userDoc, err
+}
+
+func (repo *UserRepo) UpdateUserById(user *models.User) error {
+	// adminBson, _ := bson.Marshal(admin)
+	updateFields := bson.M{
+		"$set": bson.M{
+			"isEmailApproved": user.IsEmailApproved,
+			// Add more fields as needed
+		},
+	}
+	filterData := bson.M{
+		"email": user.Email,
+	}
+	_, err := repo.collection.UpdateOne(context.TODO(), filterData, updateFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *UserRepo) GetUserById(id primitive.ObjectID) (*models.User, error) {
+	var userDoc *models.User
+	err := repo.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&userDoc)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.New("user not found")
+		}
+		log.Println("Error fetching user by id:", id, "Error:", err)
+		return nil, err
+	}
+	return userDoc, nil
 }

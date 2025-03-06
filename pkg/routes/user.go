@@ -21,6 +21,7 @@ func SetupUserRoutes(router *gin.Engine) {
 	{
 		userRoutes.POST("/register", userHandler.RegisterUser)
 		userRoutes.POST("/login", userHandler.RegisterUser)
+		userRoutes.GET("/verify", userHandler.VerifyAccount)
 		// userRoutes.POST("/change-password", pendingUserRepoHandler.RegisterUser)
 	}
 }
