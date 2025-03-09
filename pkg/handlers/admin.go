@@ -72,6 +72,7 @@ func (h *AdminHandler) Login(c *gin.Context) {
 	adminDoc, err := h.service.LoginAdmin(&admin, c)
 	if err != nil {
 		utils.ErrorJSON(c, err, http.StatusBadRequest)
+		return
 	}
 
 	utils.SuccessJSON(c, "successfully logged in", http.StatusOK, adminDoc)

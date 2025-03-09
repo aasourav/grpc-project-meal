@@ -28,10 +28,16 @@ type UserLogin struct {
 	Password string `json:"password" bson:"password" validate:"required,min=6"`
 }
 
-var userValidate = validator.New()
+var userRegistrationValidate = validator.New()
 
-func (u *User) UserValidate() error {
-	return userValidate.Struct(u)
+func (u *User) UserRegistrationValidate() error {
+	return userRegistrationValidate.Struct(u)
+}
+
+var userLoginValidate = validator.New()
+
+func (u *UserLogin) UserLoginValidate() error {
+	return userLoginValidate.Struct(u)
 }
 
 /**
