@@ -60,9 +60,34 @@ func (s *UserService) VerifyUser(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("OOOWWWMHH 5")
-
 	return nil
+}
+
+func (s *UserService) Login(user *models.UserLogin, c *gin.Context) (*models.User, error) {
+	userDoc, err := s.FindUserByEmail(user.Email)
+
+	if err != nil {
+		return nil, err
+	} else if userDoc == nil {
+		return nil, errors.New("email or password is not valid")
+	}
+
+	err = utils.ComparePassword(userDoc.Password, user.Password)
+
+	if err != nil {
+		fmt.Println("userlogin: ", err.Error())
+
+		return nil, errors.New("email or password is not valid")
+	}
+
+	if !userDoc.IsApproved {
+		return nil, errors.New("account still not approved. please contact with the authority")
+	}
+
+	expires := time.Now().Add(time.Minute * 30).Unix()
+	token, _ := utils.GenerateJWT(userDoc, "user", expires)
+	c.SetCookie("user-token", token, 3600, "/", "", false, true)
+	return userDoc, nil
 }
 
 func (s *UserService) RegisterUser(c *gin.Context, user *models.User) error {
@@ -70,6 +95,7 @@ func (s *UserService) RegisterUser(c *gin.Context, user *models.User) error {
 	if userDoc != nil {
 		return errors.New("email already exist")
 	}
+
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = user.CreatedAt
 	user.Password, _ = utils.HashPassword(user.Password)

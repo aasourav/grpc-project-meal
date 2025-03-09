@@ -26,7 +26,7 @@ type Admin struct {
 
 type AdminLogin struct {
 	Email    string `json:"email" bson:"email" validate:"required,email"`
-	Password string `json:"-" bson:"password" validate:"required,min=6"`
+	Password string `json:"password" bson:"password" validate:"required,min=6"`
 }
 
 var adminValidate = validator.New()

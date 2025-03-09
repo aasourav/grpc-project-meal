@@ -26,6 +26,28 @@ func (h *UserHandler) VerifyAccount(c *gin.Context) {
 	}
 }
 
+func (h *UserHandler) Login(c *gin.Context) {
+	var user models.UserLogin
+
+	if err := c.ShouldBindBodyWithJSON(&user); err != nil {
+		utils.ErrorJSON(c, err, http.StatusBadRequest)
+		return
+	}
+
+	if err := user.UserLoginValidate(); err != nil {
+		utils.ErrorJSON(c, err, http.StatusBadRequest)
+		return
+	}
+
+	adminDoc, err := h.service.Login(&user, c)
+	if err != nil {
+		utils.ErrorJSON(c, err, http.StatusBadRequest)
+		return
+	}
+
+	utils.SuccessJSON(c, "successfully logged in", http.StatusOK, adminDoc)
+}
+
 func (h *UserHandler) RegisterUser(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -33,7 +55,7 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	if err := user.UserValidate(); err != nil {
+	if err := user.UserRegistrationValidate(); err != nil {
 		utils.ErrorJSON(c, err, http.StatusBadRequest)
 		return
 	}
