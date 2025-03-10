@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"aas.dev/internal/config"
+	"aas.dev/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"aas.dev/internal/config"
+	"aas.dev/config"
 	"aas.dev/pkg/routes"
 	"github.com/gin-gonic/gin"
 )
