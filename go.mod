@@ -5,7 +5,6 @@ go 1.22.2
 require (
 	github.com/aasourav/proto v0.0.0-20250227103855-c6eb0dcc3a70
 	github.com/gin-gonic/gin v1.10.0
-	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/graphql-go/graphql v0.8.1
@@ -47,6 +46,5 @@ require (
 	golang.org/x/text v0.21.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241202173237-19429a94021a // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
-	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
