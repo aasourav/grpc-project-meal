@@ -54,7 +54,7 @@ func (s *UserService) VerifyUser(c *gin.Context) error {
 		return err
 	}
 
-	userDoc.IsEmailApproved = true
+	userDoc.IsEmailVerified = true
 
 	err = s.userRepo.UpdateUserById(userDoc)
 	if err != nil {

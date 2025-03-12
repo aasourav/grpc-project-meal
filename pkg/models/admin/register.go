@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"aas.dev/pkg/models/types"
-	"github.com/go-playground/validator/v10"
 )
 
 type Admin struct {
@@ -16,7 +15,7 @@ type Admin struct {
 	UpdatedAt               time.Time        `bson:"updatedAt" json:"updatedAt"`
 	EmployeeId              string           `json:"employeeId" bson:"employeeId" validate:"required"`
 	PendingUserApprovalIds  []string         `bson:"pendingApprovalIds" json:"pendingApprovalIds"`
-	IsEmailApproved         bool             `bson:"isEmailApproved" json:"isEmailApproved"`
+	IsEmailVerified         bool             `bson:"isEmailVerified" json:"isEmailVerified"`
 	IsApproved              bool             `bson:"isApproved" json:"isApproved"`
 	PendingAdminApprovalIds []string         `bson:"pendingAdminApprovalIds" json:"pendingAdminApprovalIds"`
 	Department              types.Department `json:"department" bson:"department" validate:"required,oneof=TECHNOLOGY HR MARKETING FINANCE"`
@@ -27,14 +26,4 @@ type Admin struct {
 type AdminLogin struct {
 	Email    string `json:"email" bson:"email" validate:"required,email"`
 	Password string `json:"password" bson:"password" validate:"required,min=6"`
-}
-
-var adminValidate = validator.New()
-
-func (a *Admin) AdminValidate() error {
-	return adminValidate.Struct(a)
-}
-
-func (a *AdminLogin) AdminLoginValidate() error {
-	return adminValidate.Struct(a)
 }

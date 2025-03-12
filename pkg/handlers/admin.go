@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	models "aas.dev/pkg/models/admin"
+	"aas.dev/pkg/models/types"
 	"aas.dev/pkg/services"
 	"aas.dev/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -57,19 +59,18 @@ func (h *AdminHandler) GetAdminList(p graphql.ResolveParams) (interface{}, error
 }
 
 func (h *AdminHandler) Login(c *gin.Context) {
-	var admin models.AdminLogin
-
-	if err := c.ShouldBindBodyWithJSON(&admin); err != nil {
-		utils.ErrorJSON(c, err, http.StatusBadRequest)
+	req, exists := c.Get("req")
+	if !exists {
+		utils.ErrorJSON(c, fmt.Errorf("request data not found"), http.StatusBadRequest)
 		return
 	}
 
-	if err := admin.AdminLoginValidate(); err != nil {
-		utils.ErrorJSON(c, err, http.StatusBadRequest)
+	admin, ok := req.(*models.AdminLogin)
+	if !ok {
+		utils.ErrorJSON(c, fmt.Errorf("invalid request data"), http.StatusBadRequest)
 		return
 	}
-
-	adminDoc, err := h.service.LoginAdmin(&admin, c)
+	adminDoc, err := h.service.LoginAdmin(admin, c)
 	if err != nil {
 		utils.ErrorJSON(c, err, http.StatusBadRequest)
 		return
@@ -78,19 +79,43 @@ func (h *AdminHandler) Login(c *gin.Context) {
 	utils.SuccessJSON(c, "successfully logged in", http.StatusOK, adminDoc)
 }
 
+func (h *AdminHandler) PassowordChange(c *gin.Context) {
+	req, exists := c.Get("req")
+	if !exists {
+		utils.ErrorJSON(c, fmt.Errorf("request data not found"), http.StatusBadRequest)
+		return
+	}
+
+	admin, ok := req.(*types.ResetPassword)
+	if !ok {
+		utils.ErrorJSON(c, fmt.Errorf("invalid request data"), http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.PassowordChange(c, admin); err != nil {
+		utils.ErrorJSON(c, err, http.StatusBadRequest)
+		fmt.Println(err.Error())
+		return
+	}
+
+	utils.SuccessJSON(c, "password changed successfully", http.StatusCreated, nil)
+}
+
 func (h *AdminHandler) RegisterUser(c *gin.Context) {
-	var admin models.Admin
-	if err := c.ShouldBindJSON(&admin); err != nil {
-		utils.ErrorJSON(c, err, http.StatusBadRequest)
+	req, exists := c.Get("req")
+	if !exists {
+		utils.ErrorJSON(c, fmt.Errorf("request data not found"), http.StatusBadRequest)
 		return
 	}
 
-	if err := admin.AdminValidate(); err != nil {
-		utils.ErrorJSON(c, err, http.StatusBadRequest)
+	admin, ok := req.(*models.Admin)
+	log.Printf("Type of req: %T\n", req)
+	if !ok {
+		utils.ErrorJSON(c, fmt.Errorf("invalid request data"), http.StatusBadRequest)
 		return
 	}
 
-	if err := h.service.RegisterAdmin(c, &admin); err != nil {
+	if err := h.service.RegisterAdmin(c, admin); err != nil {
 		utils.ErrorJSON(c, err, http.StatusBadRequest)
 		fmt.Println(err.Error())
 		return

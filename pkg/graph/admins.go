@@ -28,7 +28,7 @@ var productType = graphql.NewObject(graphql.ObjectConfig{
 		"updatedAt":               &graphql.Field{Type: graphql.String},
 		"employeeId":              &graphql.Field{Type: graphql.String},
 		"pendingUserApprovalIds":  &graphql.Field{Type: graphql.NewList(graphql.String)},
-		"isEmailApproved":         &graphql.Field{Type: graphql.Boolean},
+		"isEmailVerified":         &graphql.Field{Type: graphql.Boolean},
 		"isApproved":              &graphql.Field{Type: graphql.Boolean},
 		"pendingAdminApprovalIds": &graphql.Field{Type: graphql.NewList(graphql.String)},
 		"department":              &graphql.Field{Type: graphql.String},

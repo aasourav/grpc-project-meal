@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"aas.dev/pkg/interfaces"
@@ -76,9 +77,9 @@ func (s *AdminService) VerifyAdmin(c *gin.Context) error {
 		return err
 	}
 
-	adminDoc.IsEmailApproved = true
+	adminDoc.IsEmailVerified = true
 
-	err = s.adminRepo.UpdateAdminById(adminDoc)
+	err = s.adminRepo.UpdateEmailVerifiedId(adminDoc)
 	if err != nil {
 		return err
 	}
@@ -101,6 +102,34 @@ func (s *AdminService) GetAdminUserByEmail(email string) (*models.Admin, error) 
 		return nil, err
 	}
 	return adminUser, nil
+}
+
+func (s *AdminService) PassowordChange(c *gin.Context, admin *types.ResetPassword) error {
+	adminDoc, err := s.FindAdminByEmail(admin.Email)
+	if err != nil {
+		return errors.New("email not found")
+	}
+
+	if !adminDoc.IsEmailVerified {
+		return errors.New("please verify your email first")
+	}
+
+	err = utils.ComparePassword(adminDoc.Password, admin.CurrentPawword)
+	if err != nil {
+		fmt.Println(err.Error())
+		return errors.New("current password not match")
+	}
+
+	adminDoc.Password, _ = utils.HashPassword(admin.NewPassword)
+
+	err = s.adminRepo.UpdatePasswordById(adminDoc)
+
+	if err != nil {
+		log.Println(err.Error())
+		return errors.New("password update failed")
+	}
+
+	return nil
 }
 
 func (s *AdminService) RegisterAdmin(c *gin.Context, admin *models.Admin) error {
