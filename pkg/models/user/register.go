@@ -4,13 +4,12 @@ import (
 	"time"
 
 	"aas.dev/pkg/models/types"
-	"github.com/go-playground/validator/v10"
 )
 
 type User struct {
 	ID                   string                        `json:"id" bson:"_id,omitempty"`
 	Name                 string                        `json:"name" bson:"name" validate:"required,min=2"`
-	IsEmailApproved      bool                          `bson:"isEmailApproved" json:"isEmailApproved"`
+	IsEmailVerified      bool                          `bson:"isEmailVerified" json:"isEmailVerified"`
 	Email                string                        `json:"email" bson:"email" validate:"required,email"`
 	Password             string                        `json:"password" bson:"password" validate:"required,min=6"`
 	EmployeeId           string                        `json:"employeeId" bson:"employeeId" validate:"required"`
@@ -26,18 +25,6 @@ type User struct {
 type UserLogin struct {
 	Email    string `json:"email" bson:"email" validate:"required,email"`
 	Password string `json:"password" bson:"password" validate:"required,min=6"`
-}
-
-var userRegistrationValidate = validator.New()
-
-func (u *User) UserRegistrationValidate() error {
-	return userRegistrationValidate.Struct(u)
-}
-
-var userLoginValidate = validator.New()
-
-func (u *UserLogin) UserLoginValidate() error {
-	return userLoginValidate.Struct(u)
 }
 
 /**

@@ -65,7 +65,7 @@ func (repo *UserRepo) UpdateUserById(user *models.User) error {
 	// adminBson, _ := bson.Marshal(admin)
 	updateFields := bson.M{
 		"$set": bson.M{
-			"isEmailApproved": user.IsEmailApproved,
+			"isEmailVerified": user.IsEmailVerified,
 			// Add more fields as needed
 		},
 	}

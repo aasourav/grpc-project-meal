@@ -26,6 +26,29 @@ func NewAdminRepo(db *mongo.Database) interfaces.AdminRepository {
 	return &AdminRepo{collection: db.Collection(types.ADMINS)}
 }
 
+func (repo *AdminRepo) UpdatePasswordById(admin *models.Admin) error {
+	// adminBson, _ := bson.Marshal(admin)
+	updateFields := bson.M{
+		"$set": bson.M{
+			"password": admin.Password,
+			// Add more fields as needed
+		},
+	}
+	hexId, err := primitive.ObjectIDFromHex(admin.ID)
+	if err != nil {
+		return err
+	}
+	filterData := bson.M{
+		"_id": hexId,
+	}
+
+	_, err = repo.collection.UpdateOne(context.TODO(), filterData, updateFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (repo *AdminRepo) DeleteAdminById(id string) error {
 	hexId, _ := primitive.ObjectIDFromHex(id)
 	_, err := repo.collection.DeleteOne(context.TODO(), bson.M{"_id": hexId})
@@ -35,11 +58,11 @@ func (repo *AdminRepo) DeleteAdminById(id string) error {
 	return nil
 }
 
-func (repo *AdminRepo) UpdateAdminById(admin *models.Admin) error {
+func (repo *AdminRepo) UpdateEmailVerifiedId(admin *models.Admin) error {
 	// adminBson, _ := bson.Marshal(admin)
 	updateFields := bson.M{
 		"$set": bson.M{
-			"isEmailApproved": admin.IsEmailApproved,
+			"isEmailVerified": admin.IsEmailVerified,
 			// Add more fields as needed
 		},
 	}
@@ -60,7 +83,7 @@ func (repo *AdminRepo) CreateAdmin(admin *models.Admin) error {
 		"name":               admin.Name,
 		"role":               admin.Role,
 		"isApproved":         admin.IsApproved,
-		"isEmailApproved":    false,
+		"isEmailVerified":    false,
 		"employeeId":         admin.EmployeeId,
 		"createdAt":          admin.CreatedAt,
 		"updatedAt":          admin.UpdatedAt,
