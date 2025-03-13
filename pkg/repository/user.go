@@ -39,17 +39,41 @@ func NewPendingUserRepo(db *mongo.Database) interfaces.UserRepository {
 func (repo *UserRepo) CreateUser(user *models.User) error {
 
 	userDoc := bson.M{
-		"email":      user.Email,
-		"password":   user.Password,
-		"name":       user.Name,
-		"employeeId": user.EmployeeId,
-		"weeklyPlan": user.WeeklyPlan,
-		"createdAt":  user.CreatedAt,
-		"updatedAt":  user.UpdatedAt,
-		"department": user.Department,
+		"email":           user.Email,
+		"password":        user.Password,
+		"name":            user.Name,
+		"employeeId":      user.EmployeeId,
+		"isemailverified": user.IsEmailVerified,
+		"isApproved":      user.IsApproved,
+		"weeklyPlan":      user.WeeklyPlan,
+		"createdAt":       user.CreatedAt,
+		"updatedAt":       user.UpdatedAt,
+		"department":      user.Department,
 	}
 	_, err := repo.collection.InsertOne(context.Background(), userDoc)
 	return err
+}
+
+func (repo *UserRepo) UpdatePasswordById(user *models.User) error {
+	updateFields := bson.M{
+		"$set": bson.M{
+			"password": user.Password,
+			// Add more fields as needed
+		},
+	}
+	hexId, err := primitive.ObjectIDFromHex(user.ID)
+	if err != nil {
+		return err
+	}
+	filterData := bson.M{
+		"_id": hexId,
+	}
+
+	_, err = repo.collection.UpdateOne(context.TODO(), filterData, updateFields)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (repo *UserRepo) GetUserByEmail(email string) (*models.User, error) {

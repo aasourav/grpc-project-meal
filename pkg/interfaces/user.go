@@ -11,4 +11,5 @@ type UserRepository interface {
 	DeleteUserById(id string) error
 	GetUserById(id primitive.ObjectID) (*models.User, error)
 	UpdateUserById(user *models.User) error
+	UpdatePasswordById(admin *models.User) error
 }

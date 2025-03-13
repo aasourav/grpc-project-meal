@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"aas.dev/pkg/interfaces"
@@ -90,6 +91,34 @@ func (s *UserService) Login(user *models.UserLogin, c *gin.Context) (*models.Use
 	return userDoc, nil
 }
 
+func (s *UserService) PassowordChange(c *gin.Context, user *types.ResetPassword) error {
+	userDoc, err := s.FindUserByEmail(user.Email)
+	if err != nil {
+		return errors.New("email not found")
+	}
+
+	if !userDoc.IsEmailVerified {
+		return errors.New("please verify your email first")
+	}
+
+	err = utils.ComparePassword(userDoc.Password, user.CurrentPawword)
+	if err != nil {
+		fmt.Println(err.Error())
+		return errors.New("current password not match")
+	}
+
+	userDoc.Password, _ = utils.HashPassword(user.NewPassword)
+
+	err = s.userRepo.UpdatePasswordById(userDoc)
+
+	if err != nil {
+		log.Println(err.Error())
+		return errors.New("password update failed")
+	}
+
+	return nil
+}
+
 func (s *UserService) RegisterUser(c *gin.Context, user *models.User) error {
 	userDoc, _ := s.FindUserByEmail(user.Email)
 	if userDoc != nil {
@@ -98,6 +127,8 @@ func (s *UserService) RegisterUser(c *gin.Context, user *models.User) error {
 
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = user.CreatedAt
+	user.IsEmailVerified = false
+	user.IsApproved = false
 	user.Password, _ = utils.HashPassword(user.Password)
 	err := s.userRepo.CreateUser(user)
 	if err != nil {

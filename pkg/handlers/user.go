@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"aas.dev/pkg/models/types"
 	models "aas.dev/pkg/models/user"
 	"aas.dev/pkg/services"
 	"aas.dev/pkg/utils"
@@ -24,6 +25,28 @@ func (h *UserHandler) VerifyAccount(c *gin.Context) {
 		fmt.Println(err.Error())
 		return
 	}
+}
+
+func (h *UserHandler) PassowordChange(c *gin.Context) {
+	req, exists := c.Get("req")
+	if !exists {
+		utils.ErrorJSON(c, fmt.Errorf("request data not found"), http.StatusBadRequest)
+		return
+	}
+
+	user, ok := req.(*types.ResetPassword)
+	if !ok {
+		utils.ErrorJSON(c, fmt.Errorf("invalid request data"), http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.PassowordChange(c, user); err != nil {
+		utils.ErrorJSON(c, err, http.StatusBadRequest)
+		fmt.Println(err.Error())
+		return
+	}
+
+	utils.SuccessJSON(c, "password changed successfully", http.StatusCreated, nil)
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
