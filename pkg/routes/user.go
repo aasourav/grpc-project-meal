@@ -3,6 +3,7 @@ package routes
 import (
 	"aas.dev/pkg/handlers"
 	middleware "aas.dev/pkg/middleware"
+	"aas.dev/pkg/models/types"
 	models "aas.dev/pkg/models/user"
 	"aas.dev/pkg/repository"
 	"aas.dev/pkg/services"
@@ -24,6 +25,6 @@ func SetupUserRoutes(router *gin.Engine) {
 		userRoutes.POST("/register", middleware.RequestValidatorMiddleware(&models.User{}), userHandler.RegisterUser)
 		userRoutes.POST("/login", middleware.RequestValidatorMiddleware(&models.UserLogin{}), userHandler.Login)
 		userRoutes.GET("/verify", userHandler.VerifyAccount)
-		// userRoutes.POST("/change-password", pendingUserRepoHandler.RegisterUser)
+		userRoutes.POST("/password-reset", middleware.RequestValidatorMiddleware(&types.ResetPassword{}), userHandler.PassowordChange)
 	}
 }
