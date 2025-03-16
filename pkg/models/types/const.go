@@ -5,6 +5,7 @@ const (
 	VERIFICATION  = "verifications"
 	PENDING_USERS = "pendingusers"
 	ADMINS        = "admins"
+	MEAL_CONSUME  = "mealconsume"
 	SUPER_ADMIN   = "superadmins"
 )
 

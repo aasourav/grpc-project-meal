@@ -26,6 +26,13 @@ func ComparePassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
+func BoolToInt(b bool) int32 {
+	if b {
+		return 1
+	}
+	return 0
+}
+
 func GenerateJWT(data any, datakey string, exipresIn int64) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		datakey: data,

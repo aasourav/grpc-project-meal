@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"aas.dev/config"
+	"aas.dev/pkg/cronjobs"
 	"aas.dev/pkg/routes"
 	"github.com/gin-gonic/gin"
 )
@@ -11,6 +12,7 @@ import (
 func main() {
 	cfg := config.LoadConfig()
 	r := gin.Default()
+	cronjobs.StartCronJob()
 
 	routes.SetupUserRoutes(r)
 	routes.SetupAdminRoutes(r)

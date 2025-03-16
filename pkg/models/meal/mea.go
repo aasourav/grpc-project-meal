@@ -1,4 +1,4 @@
-package types
+package models
 
 import "time"
 
@@ -11,7 +11,3 @@ type MealConsume struct {
 	UpdatedAt   time.Time `bson:"updatedAt" json:"updatedAt"`
 	ModifiedBy  string    `json:"modifiedBy" bson:"modifiedBy"`
 }
-
-const (
-	SYSTEM_CRONJOB = "SYSTEM_CRONJOB"
-)
