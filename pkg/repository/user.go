@@ -36,6 +36,25 @@ func NewPendingUserRepo(db *mongo.Database) interfaces.UserRepository {
 	return &UserRepo{collection: db.Collection(types.PENDING_USERS)}
 }
 
+func (repo *UserRepo) GetAllUsers() ([]models.User, error) {
+	var users []models.User
+	cursor, err := repo.collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+	for cursor.Next(context.Background()) {
+		var user models.User
+		err := cursor.Decode(&user)
+		if err != nil {
+			log.Println("Error decoding user: ", err)
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
 func (repo *UserRepo) CreateUser(user *models.User) error {
 
 	userDoc := bson.M{

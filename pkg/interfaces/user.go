@@ -12,4 +12,5 @@ type UserRepository interface {
 	GetUserById(id primitive.ObjectID) (*models.User, error)
 	UpdateUserById(user *models.User) error
 	UpdatePasswordById(admin *models.User) error
+	GetAllUsers() ([]models.User, error)
 }

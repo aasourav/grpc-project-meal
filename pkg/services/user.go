@@ -25,6 +25,14 @@ func NewUserService(userRepo interfaces.UserRepository, verificationRepo interfa
 	return &UserService{userRepo: userRepo, verificationRepo: verificationRepo}
 }
 
+func (s *UserService) GetAllUsers() (*[]models.User, error) {
+	users, err := s.userRepo.GetAllUsers()
+	if err != nil {
+		return nil, err
+	}
+	return &users, nil
+}
+
 func (s *UserService) VerifyUser(c *gin.Context) error {
 	if c.Query("u") == "" {
 		return errors.New("invalid request")
