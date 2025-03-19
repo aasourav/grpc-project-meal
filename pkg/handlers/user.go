@@ -71,6 +71,37 @@ func (h *UserHandler) Login(c *gin.Context) {
 	utils.SuccessJSON(c, "successfully logged in", http.StatusOK, adminDoc)
 }
 
+func (h *UserHandler) MealPlanUpdate(c *gin.Context) {
+	req, exists := c.Get("req")
+	if !exists {
+		utils.ErrorJSON(c, fmt.Errorf("request data not found"), http.StatusBadRequest)
+		return
+	}
+	userMealPlan, ok := req.(*types.UpdateWeeklyMealPlan)
+	if !ok {
+		utils.ErrorJSON(c, fmt.Errorf("user not authenticated"), http.StatusForbidden)
+		return
+	}
+
+	userData, exist := c.Get("userData")
+	if !exist {
+		utils.ErrorJSON(c, fmt.Errorf("user not found"), http.StatusBadRequest)
+		return
+	}
+	userParsedData, ok := userData.(models.User)
+	if !ok {
+		utils.ErrorJSON(c, fmt.Errorf("invalid request"), http.StatusBadGateway)
+		return
+	}
+
+	res, err := h.service.UpdateMealPlan(c, userMealPlan, userParsedData.ID)
+	if err != nil {
+		utils.ErrorJSON(c, fmt.Errorf("an unknown error happen"), http.StatusBadGateway)
+	}
+
+	utils.SuccessJSON(c, "successfully updated meal plan", http.StatusOK, res)
+}
+
 func (h *UserHandler) RegisterUser(c *gin.Context) {
 	req, exists := c.Get("req")
 	if !exists {

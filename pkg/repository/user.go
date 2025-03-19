@@ -32,6 +32,31 @@ func (repo *UserRepo) DeleteUserById(id string) error {
 	return nil
 }
 
+func (repo *UserRepo) UpdateUserMealPlan(userData *models.User) error {
+	updateFields := bson.M{
+		"$set": bson.M{
+			"requestNewWeeklyPlan": userData.RequestNewWeeklyPlan,
+			"weeklyPlan":           userData.WeeklyPlan,
+		},
+	}
+
+	hexId, err := primitive.ObjectIDFromHex(userData.ID)
+	if err != nil {
+		return err
+	}
+
+	userId := bson.M{
+		"_id": hexId,
+	}
+
+	_, err = repo.collection.UpdateByID(context.TODO(), userId, updateFields)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func NewPendingUserRepo(db *mongo.Database) interfaces.UserRepository {
 	return &UserRepo{collection: db.Collection(types.PENDING_USERS)}
 }

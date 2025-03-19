@@ -99,6 +99,38 @@ func (s *UserService) Login(user *models.UserLogin, c *gin.Context) (*models.Use
 	return userDoc, nil
 }
 
+func (s *UserService) UpdateMealPlan(c *gin.Context, userMealReqData *types.UpdateWeeklyMealPlan, userId string) (*models.User, error) {
+	loc, err := time.LoadLocation("Asia/Dhaka")
+	if err != nil {
+		return nil, err
+	}
+
+	hexId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	userDoc, err := s.userRepo.GetUserById(hexId)
+	if err != nil || userDoc == nil {
+		log.Println("user not found: ", err)
+		return nil, errors.New("user not found")
+	}
+
+	if time.Now().In(loc).Hour() < 8 {
+		userDoc.WeeklyPlan = userMealReqData.WeeklyPlan
+	} else {
+		userDoc.RequestNewWeeklyPlan = userMealReqData.WeeklyPlan
+	}
+
+	err = s.userRepo.UpdateUserMealPlan(userDoc)
+	if err != nil {
+		return nil, err
+	}
+
+	utils.NatsConn.Publish("user.create", []byte(fmt.Sprintf("New meal request by %s", userDoc.Email)))
+	return userDoc, nil
+}
+
 func (s *UserService) PassowordChange(c *gin.Context, user *types.ResetPassword) error {
 	userDoc, err := s.FindUserByEmail(user.Email)
 	if err != nil {

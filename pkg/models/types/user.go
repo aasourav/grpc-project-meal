@@ -30,3 +30,7 @@ type RequestNewWeeklyPlan struct {
 	CreatedAt            time.Time `bson:"createdAt" json:"createdAt"`
 	ApprovedOrRejectedAt time.Time `bson:"approvedOrRejectedAt" json:"approvedOrRejectedAt"`
 }
+
+type UpdateWeeklyMealPlan struct {
+	WeeklyPlan []bool `json:"weeklyPlan" bson:"weeklyPlan" validate:"required,len=7"`
+}
