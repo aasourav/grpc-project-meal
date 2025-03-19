@@ -26,5 +26,6 @@ func SetupUserRoutes(router *gin.Engine) {
 		userRoutes.POST("/login", middleware.RequestValidatorMiddleware(&models.UserLogin{}), userHandler.Login)
 		userRoutes.GET("/verify", userHandler.VerifyAccount)
 		userRoutes.POST("/password-reset", middleware.RequestValidatorMiddleware(&types.ResetPassword{}), userHandler.PassowordChange)
+		userRoutes.POST("/update-meal-plan", middleware.RequestValidatorMiddleware(&types.UpdateWeeklyMealPlan{}), middleware.UserValidatorMiddleware(), userHandler.MealPlanUpdate)
 	}
 }

@@ -7,19 +7,19 @@ import (
 )
 
 type User struct {
-	ID                   string                        `json:"id" bson:"_id,omitempty"`
-	Name                 string                        `json:"name" bson:"name" validate:"required,min=2"`
-	IsEmailVerified      bool                          `bson:"isEmailVerified" json:"isEmailVerified"`
-	Email                string                        `json:"email" bson:"email" validate:"required,email"`
-	Password             string                        `json:"password" bson:"password" validate:"required,min=6"`
-	EmployeeId           string                        `json:"employeeId" bson:"employeeId" validate:"required"`
-	WeeklyPlan           []bool                        `json:"weeklyplan" bson:"weeklyPlan" validate:"required,len=7"` // last weekly plan for check every element
-	CreatedAt            time.Time                     `bson:"createdAt" json:"createdAt"`
-	UpdatedAt            time.Time                     `bson:"updatedAt" json:"updatedAt"`
-	Department           types.Department              `json:"department" bson:"department" validate:"required,oneof=TECHNOLOGY HR MARKETING FINANCE"`
-	IsApproved           bool                          `bson:"isApproved" json:"isApproved"`
-	ApprovedById         string                        `bson:"approvedById" json:"approvedById"`
-	RequestNewWeeklyPlan *[]types.RequestNewWeeklyPlan `bson:"requestNewWeeklyPlan" json:"requestNewWeeklyPlan"`
+	ID                   string           `json:"id" bson:"_id,omitempty"`
+	Name                 string           `json:"name" bson:"name" validate:"required,min=2"`
+	IsEmailVerified      bool             `bson:"isEmailVerified" json:"isEmailVerified"`
+	Email                string           `json:"email" bson:"email" validate:"required,email"`
+	Password             string           `json:"password" bson:"password" validate:"required,min=6"`
+	EmployeeId           string           `json:"employeeId" bson:"employeeId" validate:"required"`
+	WeeklyPlan           []bool           `json:"weeklyplan" bson:"weeklyPlan" validate:"required,len=7"` // last weekly plan for check every element
+	CreatedAt            time.Time        `bson:"createdAt" json:"createdAt"`
+	UpdatedAt            time.Time        `bson:"updatedAt" json:"updatedAt"`
+	Department           types.Department `json:"department" bson:"department" validate:"required,oneof=TECHNOLOGY HR MARKETING FINANCE"`
+	IsApproved           bool             `bson:"isApproved" json:"isApproved"`
+	ApprovedById         string           `bson:"approvedById" json:"approvedById"`
+	RequestNewWeeklyPlan []bool           `bson:"requestNewWeeklyPlan" json:"requestNewWeeklyPlan"`
 }
 
 type UserLogin struct {

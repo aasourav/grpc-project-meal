@@ -13,4 +13,5 @@ type UserRepository interface {
 	UpdateUserById(user *models.User) error
 	UpdatePasswordById(admin *models.User) error
 	GetAllUsers() ([]models.User, error)
+	UpdateUserMealPlan(userData *models.User) error
 }
