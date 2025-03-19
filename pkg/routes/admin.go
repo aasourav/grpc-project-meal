@@ -24,8 +24,8 @@ func SetupAdminRoutes(router *gin.Engine) {
 	adminRoutes := router.Group("/admins")
 	{
 		adminRoutes.POST("/register", middleware.RequestValidatorMiddleware(&models.Admin{}), adminHandler.RegisterUser)
-		adminRoutes.POST("/login", middleware.RequestValidatorMiddleware(&models.AdminLogin{}), adminHandler.Login)
-		adminRoutes.POST("/password-reset", middleware.RequestValidatorMiddleware(&types.ResetPassword{}), adminHandler.PassowordChange)
+		adminRoutes.POST("/login", middleware.RequestValidatorMiddleware(&types.AdminLogin{}), adminHandler.Login)
+		adminRoutes.POST("/password-reset", middleware.RequestValidatorMiddleware(&types.ResetPassword{}), middleware.AdminValidatorMiddleware(), adminHandler.PassowordChange)
 		adminRoutes.GET("/verify", adminHandler.VerifyAccount)
 	}
 }

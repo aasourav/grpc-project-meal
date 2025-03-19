@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"log"
 	"time"
@@ -43,7 +44,7 @@ func GenerateJWT(data any, datakey string, exipresIn int64) (string, error) {
 	return token.SignedString(secretKey)
 }
 
-func VerifyJWT(tokenString string, datakey string) (interface{}, error) {
+func VerifyJWT(tokenString string, datakey string) ([]byte, error) {
 	// Parse the token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Check that the signing method is HMAC and that it matches what we expect
@@ -66,7 +67,11 @@ func VerifyJWT(tokenString string, datakey string) (interface{}, error) {
 			if exp, ok := claims["exp"].(float64); ok && time.Now().Unix() > int64(exp) {
 				return nil, errors.New("token expired")
 			}
-			return data, nil
+			marshaledData, err := json.Marshal(data)
+			if err != nil {
+				return nil, err
+			}
+			return marshaledData, nil
 		}
 	}
 

@@ -2,8 +2,6 @@ package types
 
 import (
 	"time"
-
-	"github.com/go-playground/validator/v10"
 )
 
 type Department string
@@ -42,11 +40,5 @@ type Admin struct {
 
 type AdminLogin struct {
 	Email    string `json:"email" bson:"email" validate:"required,email"`
-	Password string `json:"-" bson:"password" validate:"required,min=6"`
-}
-
-var adminValidate = validator.New()
-
-func (u *User) AdminValidateConsumeValidate() error {
-	return adminValidate.Struct(u)
+	Password string `json:"password" bson:"password" validate:"required"`
 }
