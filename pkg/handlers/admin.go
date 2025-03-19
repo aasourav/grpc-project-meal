@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"reflect"
 
 	models "aas.dev/pkg/models/admin"
 	"aas.dev/pkg/models/types"
@@ -65,7 +66,7 @@ func (h *AdminHandler) Login(c *gin.Context) {
 		return
 	}
 
-	admin, ok := req.(*models.AdminLogin)
+	admin, ok := req.(*types.AdminLogin)
 	if !ok {
 		utils.ErrorJSON(c, fmt.Errorf("invalid request data"), http.StatusBadRequest)
 		return
@@ -86,13 +87,26 @@ func (h *AdminHandler) PassowordChange(c *gin.Context) {
 		return
 	}
 
+	adminDataFromMiddleware, exist := c.Get("adminData")
+	if !exist {
+		utils.ErrorJSON(c, fmt.Errorf("admin data not found"), http.StatusBadRequest)
+	}
+
+	fmt.Println("adminDataFromMiddleware type:", reflect.TypeOf(adminDataFromMiddleware))
+	adminData, ok := adminDataFromMiddleware.(models.Admin)
+	log.Println("ADMIN DATA:  ", adminData)
+	if !ok {
+		utils.ErrorJSON(c, fmt.Errorf("user not authenticated"), http.StatusForbidden)
+		return
+	}
+
 	admin, ok := req.(*types.ResetPassword)
 	if !ok {
 		utils.ErrorJSON(c, fmt.Errorf("invalid request data"), http.StatusBadRequest)
 		return
 	}
 
-	if err := h.service.PassowordChange(c, admin); err != nil {
+	if err := h.service.PassowordChange(c, admin, &adminData); err != nil {
 		utils.ErrorJSON(c, err, http.StatusBadRequest)
 		fmt.Println(err.Error())
 		return

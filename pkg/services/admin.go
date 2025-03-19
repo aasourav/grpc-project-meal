@@ -24,7 +24,7 @@ func NewAdminService(adminRepo interfaces.AdminRepository, verificationRepo inte
 	return &AdminService{adminRepo: adminRepo, verificationRepo: verificationRepo}
 }
 
-func (s *AdminService) LoginAdmin(admin *models.AdminLogin, c *gin.Context) (*models.Admin, error) {
+func (s *AdminService) LoginAdmin(admin *types.AdminLogin, c *gin.Context) (*models.Admin, error) {
 	adminDoc, err := s.FindAdminByEmail(admin.Email)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (s *AdminService) LoginAdmin(admin *models.AdminLogin, c *gin.Context) (*mo
 	}
 
 	expires := time.Now().Add(time.Minute * 30).Unix()
-	token, _ := utils.GenerateJWT(adminDoc, "user", expires)
+	token, _ := utils.GenerateJWT(adminDoc, "admin", expires)
 	c.SetCookie("admin-token", token, 3600, "/", "", false, true)
 	return adminDoc, nil
 }
@@ -104,8 +104,8 @@ func (s *AdminService) GetAdminUserByEmail(email string) (*models.Admin, error) 
 	return adminUser, nil
 }
 
-func (s *AdminService) PassowordChange(c *gin.Context, admin *types.ResetPassword) error {
-	adminDoc, err := s.FindAdminByEmail(admin.Email)
+func (s *AdminService) PassowordChange(c *gin.Context, admin *types.ResetPassword, adminData *models.Admin) error {
+	adminDoc, err := s.FindAdminByEmail(adminData.Email)
 	if err != nil {
 		return errors.New("email not found")
 	}
