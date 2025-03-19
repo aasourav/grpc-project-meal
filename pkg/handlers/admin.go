@@ -94,7 +94,6 @@ func (h *AdminHandler) PassowordChange(c *gin.Context) {
 
 	fmt.Println("adminDataFromMiddleware type:", reflect.TypeOf(adminDataFromMiddleware))
 	adminData, ok := adminDataFromMiddleware.(models.Admin)
-	log.Println("ADMIN DATA:  ", adminData)
 	if !ok {
 		utils.ErrorJSON(c, fmt.Errorf("user not authenticated"), http.StatusForbidden)
 		return
